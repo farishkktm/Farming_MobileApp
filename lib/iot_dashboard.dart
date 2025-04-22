@@ -61,56 +61,214 @@ class _IotDashboardPageState extends State<IotDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: temperature == null
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildDataCard("Temperature", "$temperature °C", Icons.thermostat, Colors.red),
-          _buildDataCard("Humidity", "$humidity %", Icons.water_drop, Colors.blue),
-          _buildDataCard("Soil Moisture", "$moisture %", Icons.grass, Colors.brown),
-          _buildDataCard(
-              "IR Sensor",
-              irStatus == "1" ? "Obstacle Detected" : "Clear",
-              Icons.sensors,
-              irStatus == "1" ? Colors.purple : Colors.green),
-          const SizedBox(height: 30),
+          ? Center(child: CircularProgressIndicator(color: Colors.green[800]))
+          : SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Text('Field Conditions',
+                style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.green[800])),
+            SizedBox(height: 16),
 
-          Text('Pump Control', style: GoogleFonts.electrolize(fontSize: 20, fontWeight: FontWeight.bold)),
+            // Sensor Grid
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              childAspectRatio: 1.1,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              children: [
+                _buildSensorCard(
+                    context,
+                    "Temperature",
+                    "$temperature°C",
+                    Icons.thermostat,
+                    Colors.red[400]!,
+                    LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Colors.red[100]!, Colors.white])),
+                _buildSensorCard(
+                    context,
+                    "Humidity",
+                    "$humidity%",
+                    Icons.water_drop,
+                    Colors.blue[400]!,
+                    LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Colors.blue[100]!, Colors.white])),
+                _buildSensorCard(
+                    context,
+                    "Soil Moisture",
+                    "$moisture%",
+                    Icons.grass,
+                    Colors.brown[400]!,
+                    LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Colors.brown[100]!, Colors.white])),
+                _buildSensorCard(
+                    context,
+                    "IR Sensor",
+                    irStatus == "1" ? "Obstacle" : "Clear",
+                    Icons.sensors,
+                    irStatus == "1" ? Colors.purple[400]! : Colors.green[400]!,
+                    LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          irStatus == "1"
+                              ? Colors.purple[100]!
+                              : Colors.green[100]!,
+                          Colors.white
+                        ])),
+              ],
+            ),
+            SizedBox(height: 24),
 
-          Card(
-            color: Colors.lightBlue,
-            margin: const EdgeInsets.only(top: 10),
-            child: Container(
+            // Pump Control Section
+            Container(
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.black, width: 3),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: ListTile(
-                title: Text('Pump',
-                    style: GoogleFonts.electrolize(
-                        fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
-                trailing: Switch(
-                  value: pumpSwitch,
-                  onChanged: (bool value) => updatePumpSwitch(value),
-                  activeColor: Colors.black,
-                ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6,
+                        offset: Offset(0, 2))
+                  ]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Irrigation Control',
+                      style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green[800])),
+                  SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.opacity,
+                          size: 30,
+                          color: Colors.blue[800]),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text('Water Pump',
+                            style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500)),
+                      ),
+                      Transform.scale(
+                        scale: 1.3,
+                        child: Switch(
+                          value: pumpSwitch,
+                          onChanged: (value) => updatePumpSwitch(value),
+                          activeTrackColor: Colors.green[300],
+                          activeColor: Colors.green[800],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  LinearProgressIndicator(
+                    value: moisture != null ? moisture! / 100 : 0,
+                    backgroundColor: Colors.grey[200],
+                    color: moisture != null
+                        ? moisture! < 30
+                        ? Colors.red[400]
+                        : moisture! < 60
+                        ? Colors.orange[400]
+                        : Colors.green[400]
+                        : Colors.grey,
+                    minHeight: 8,
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    moisture != null
+                        ? 'Soil moisture is ${moisture! < 30 ? 'low' : moisture! < 60 ? 'moderate' : 'good'}'
+                        : 'Reading moisture...',
+                    style: GoogleFonts.poppins(fontSize: 12),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            SizedBox(height: 16),
+
+            // Status Summary
+            if (irStatus == "1")
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                    color: Colors.orange[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange[200]!)),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded,
+                        color: Colors.orange[800]),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text('Obstacle detected in field!',
+                          style: GoogleFonts.poppins(
+                              color: Colors.orange[800])),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildDataCard(String title, String value, IconData icon, Color iconColor) {
-    return Card(
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        leading: Icon(icon, color: iconColor, size: 30),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(value, style: const TextStyle(fontSize: 18)),
+  Widget _buildSensorCard(BuildContext context, String title, String value,
+      IconData icon, Color iconColor, Gradient gradient) {
+    return Container(
+      decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 2))
+          ]),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.2),
+                  shape: BoxShape.circle),
+              child: Icon(icon, size: 28, color: iconColor),
+            ),
+            SizedBox(height: 12),
+            Text(title,
+                style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[700])),
+            SizedBox(height: 4),
+            Text(value,
+                style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[900])),
+          ],
+        ),
       ),
     );
   }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "597855463198",
+    "project_id": "farming-eb778",
+    "storage_bucket": "farming-eb778.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:597855463198:android:b4c6554d17c29d172ccb0f",
+        "android_client_info": {
+          "package_name": "com.example.farish"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIT8IJxPCvy7mcNX6dp533-GQoxZaKRb0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class HelpSupportPage extends StatelessWidget {
   @override
@@ -49,6 +51,7 @@ class HelpSupportPage extends StatelessWidget {
               'Email Us',
               'support@smartfarm.com',
               Colors.red[400]!,
+                  () => _launchEmail(),
             ),
             _buildContactOption(
               context,
@@ -56,6 +59,7 @@ class HelpSupportPage extends StatelessWidget {
               'Call Us',
               '+6012-345 6789',
               Colors.green[600]!,
+                  () => _launchPhoneCall(),
             ),
             _buildContactOption(
               context,
@@ -63,6 +67,7 @@ class HelpSupportPage extends StatelessWidget {
               'WhatsApp',
               '+6012-345 6789',
               Colors.green[500]!,
+                  () => _launchWhatsApp(),
             ),
             SizedBox(height: 24),
 
@@ -77,24 +82,51 @@ class HelpSupportPage extends StatelessWidget {
               context,
               'Getting Started',
               'Learn how to set up your Smart Farming system',
-              'https://example.com/video1',
-            ),
-            _buildVideoCard(
-              context,
-              'Using the Dashboard',
-              'Master all dashboard features in 5 minutes',
-              'https://example.com/video2',
-            ),
-            _buildVideoCard(
-              context,
-              'Troubleshooting',
-              'Fix common issues with your system',
-              'https://example.com/video3',
+              'https://www.youtube.com/watch?v=EXAMPLE_ID_1', // Ganti dengan ID YouTube sebenar
             ),
           ],
         ),
       ),
     );
+  }
+
+  // Fungsi untuk melancarkan email - DIPERBAIKI
+  _launchEmail() async {
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'support@smartfarm.com',
+      queryParameters: {
+        'subject': 'SmartFarm Support Request',
+        'body': 'Hello, I need help with...',
+      },
+    );
+
+    final String url = emailLaunchUri.toString();
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch email';
+    }
+  }
+
+// Fungsi untuk melancarkan panggilan telefon - DIPERBAIKI
+  _launchPhoneCall() async {
+    const String url = 'tel:+60123456789'; // Format internasional tanpa spasi
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch phone call';
+    }
+  }
+
+// Fungsi untuk melancarkan WhatsApp - SUDAH BERFUNGSI
+  _launchWhatsApp() async {
+    const String url = 'https://wa.me/60123456789?text=Hello%20SmartFarm%20support,%20I%20need%20help%20with...';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch WhatsApp';
+    }
   }
 
   Widget _buildSectionHeader(BuildContext context, String title, IconData icon) {
@@ -149,6 +181,7 @@ class HelpSupportPage extends StatelessWidget {
       String title,
       String value,
       Color color,
+      VoidCallback onTap,
       ) {
     return Card(
       margin: EdgeInsets.only(bottom: 12),
@@ -176,9 +209,7 @@ class HelpSupportPage extends StatelessWidget {
           style: GoogleFonts.poppins(),
         ),
         trailing: Icon(Icons.chevron_right, color: Colors.grey),
-        onTap: () {
-          // Add action for contact option
-        },
+        onTap: onTap,
       ),
     );
   }
@@ -187,8 +218,10 @@ class HelpSupportPage extends StatelessWidget {
       BuildContext context,
       String title,
       String description,
-      String url,
+      String youtubeUrl,
       ) {
+    final videoId = YoutubePlayer.convertUrlToId(youtubeUrl) ?? '';
+
     return Card(
       margin: EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
@@ -201,13 +234,17 @@ class HelpSupportPage extends StatelessWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
             child: Container(
               color: Colors.grey[200],
-              height: 150,
-              child: Center(
-                child: Icon(
-                  Icons.play_circle_fill,
-                  size: 50,
-                  color: Colors.green[800],
+              height: 200,
+              child: YoutubePlayer(
+                controller: YoutubePlayerController(
+                  initialVideoId: videoId,
+                  flags: YoutubePlayerFlags(
+                    autoPlay: false,
+                    mute: false,
+                  ),
                 ),
+                showVideoProgressIndicator: true,
+                progressIndicatorColor: Colors.green[800],
               ),
             ),
           ),
@@ -233,7 +270,29 @@ class HelpSupportPage extends StatelessWidget {
                 SizedBox(height: 8),
                 ElevatedButton(
                   onPressed: () {
-                    // Add video playback functionality
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Scaffold(
+                          appBar: AppBar(
+                            title: Text(title),
+                          ),
+                          body: Center(
+                            child: YoutubePlayer(
+                              controller: YoutubePlayerController(
+                                initialVideoId: videoId,
+                                flags: YoutubePlayerFlags(
+                                  autoPlay: true,
+                                  mute: false,
+                                ),
+                              ),
+                              showVideoProgressIndicator: true,
+                              progressIndicatorColor: Colors.green[800],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[800],

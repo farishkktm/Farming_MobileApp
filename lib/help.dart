@@ -82,7 +82,7 @@ class HelpSupportPage extends StatelessWidget {
               context,
               'Getting Started',
               'Learn how to set up your Smart Farming system',
-              'https://www.youtube.com/watch?v=EXAMPLE_ID_1', // Ganti dengan ID YouTube sebenar
+              'https://youtube.com/shorts/aOhXgG2agHk?feature=share', // Ganti dengan ID YouTube sebenar
             ),
           ],
         ),
